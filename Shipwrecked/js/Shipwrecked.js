@@ -47,42 +47,59 @@ scoreText = "";
 
 
     preload() {
-        this.load.image("BigSand", "assets/island_sand_d.jpg");
+        
         this.load.image("sand", "assets/island_sand_d64.jpg");
         this.load.image("ocean", "assets/ocean64.jpg");
-        this.load.image("lavaBeach", "assets/lava_s64.jpg");
-        this.load.spritesheet("dude", "assets/dude.png", { frameWidth: 64, frameHeight: 64 });
+        this.load.image("boar", "assets/lava_s64.jpg");
+        this.load.spritesheet("dude", "assets/universal-lpc-sprite_male_01_full.png", { frameWidth: 64, frameHeight: 64 });
     }
+
+// NOTE:  Our dude sprite sheet is 0 - 12 sprites wide over all. so
+//        that means row 1 is 0 -12 for a total of 13 POSSIBLE slots.
+//        However, we only have 7 in row 1 so slots 7-12 are empty.
+//        row 2 starts on slot 13, etc. 
 
     create() {
         //this.score = 0;
         //this.gameOver = false;
 
+        // only for test..
+        this.gold = 1;
+        this.wood = 2;
+        this.rope = 3;
+        this.sails = 4;
+        this.food = 5;
+        this.score = 6;
+
         // add the ground we can walk on (beach etc) as the whole underlying group to start..
         this.ground = this.physics.add.staticGroup();
-
 
         //  A sand everywhere.
         let i = 0;
         let j = 0;
-        for (i = 0; i < 640; i + 64) {
-            for (j = 0; j < 640; j + 64) {
+        for (i = 0; i < 640; i += 64) {
+            console.log("in first i loop for sand");
+            for (j = 0; j < 640; j += 64) {
                 this.ground.create(i, j, "sand");
             }// end for j
         }// end for i
 
 
-        // this.add.image(i, j, "sand");
+        // to only add an image someplace, you would say:
+        // this.add.image(x, y, "sand");
+
+
         //  add ocean as a static but we will set it up as a collider later.
-        this.ocean = this.physics.add.staticGroup();
+        this.BigOcean = this.physics.add.staticGroup();
         // just a couple tiles wide down the left for now.
-        for (i = 0; i < 65; i + 64) {
-            for (j = 0; j < 640; j + 64) {
-                this.ground.create(i, j, "sand");
+        for (i = 0; i < 65; i += 64) {
+            console.log("in first i loop for ocean");
+            for (j = 0; j < 640; j += 64) {
+                this.BigOcean.create(i, j, "ocean");
             }// end for j
         }// end for i
 
-
+        console.log("out of ocean creation");
         //  Here we create the ground.
         //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
         //this.platforms.create(320, 360, "ground").setScale(2).refreshBody();
@@ -96,41 +113,43 @@ scoreText = "";
         this.player = this.physics.add.sprite(320, 320, "dude");
 
         //  Player physics properties. Give the little guy a slight bounce.
-        this.player.setBounce(0.15);
+        //this.player.setBounce(0.15);
         this.player.setCollideWorldBounds(true);
 
         //  Our player animations, turning, walking up, down, left and right.
         /*********** TODO.  THESE NOT SET CORRECTLY YET ***************** */
         this.anims.create({
             key: "front",
-            frames: [{ key: "dude", frame: 4 }],
-            frameRate: 20
+            frames: this.anims.generateFrameNumbers("dude", { start: 130, end: 138 }),
+            frameRate: 16,
+            repeate: -1
         });
 
         this.anims.create({
             key: "back",
-            frames: [{ key: "dude", frame: 4 }],
-            frameRate: 20
+            frames: this.anims.generateFrameNumbers("dude", { start: 104, end: 112 }),
+            frameRate: 16,
+            repeate: -1
         });
 
 
         this.anims.create({
             key: "left",
-            frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
-            frameRate: 10,
+            frames: this.anims.generateFrameNumbers("dude", { start: 117, end: 125 }),
+            frameRate: 16,
             repeat: -1
         });
 
         this.anims.create({
             key: "turn",
-            frames: [{ key: "dude", frame: 4 }],
-            frameRate: 20
+            frames: [{ key: "dude", frame: 130 }],
+            frameRate: 16
         });
 
         this.anims.create({
             key: "right",
-            frames: this.anims.generateFrameNumbers("dude", { start: 5, end: 8 }),
-            frameRate: 10,
+            frames: this.anims.generateFrameNumbers("dude", { start: 143, end: 151 }),
+            frameRate: 16,
             repeat: -1
         });
 
@@ -138,11 +157,11 @@ scoreText = "";
         this.cursors = this.input.keyboard.createCursorKeys();
 
 
-        // Piggy down the right side area
+        // Piggy down the right side area for now
         this.boars = this.physics.add.group({
             key: "boar",
-            repeat: 10,
-            setXY: { x: 550, y: 0, stepY: 64 }
+            repeat: 4,
+            setXY: { x: 550, y: 0, stepY: 150 }
         });
 
         this.boars.children.iterate(function (child) {
@@ -155,11 +174,11 @@ scoreText = "";
         //this.bombs = this.physics.add.group();
 
         //  The score
-        //this.scoreText = this.add.text(16, 16, "score: 0", { fontSize: "32px", fill: "#000" });
+        this.scoreText = this.add.text(16, 16, myItem, { fontSize: "32px", fill: "#000" });
 
         //  Collide the player and the boars with the ocean
-        this.physics.add.collider(this.player, this.ocean);
-        this.physics.add.collider(this.boars, this.ocean);
+        this.physics.add.collider(this.player, this.BigOcean);
+        this.physics.add.collider(this.boars, this.BigOcean);
 
         // collide boars with each other.
         this.physics.add.collider(this.boars, this.boars);
@@ -176,24 +195,22 @@ scoreText = "";
         }
 
         if (this.cursors.left.isDown) {
-            this.player.setVelocityX(-160);
-
+            this.player.setVelocityX(-100);
             this.player.anims.play("left", true);
         } else if (this.cursors.right.isDown) {
-            this.player.setVelocityX(160);
-
+            this.player.setVelocityX(100);
             this.player.anims.play("right", true);
         }
         else if (this.cursors.up.isDown) {
-            this.player.setVelocityY(-160);
-            this.player.anims.play("back");
+            this.player.setVelocityY(-100);
+            this.player.anims.play("back", true);
         }
         else if (this.cursors.down.isDown) {
-            this.player.setVelocityY(160);
-            this.player.anims.play("front");
+            this.player.setVelocityY(100);
+            this.player.anims.play("front", true);
         }else {
             this.player.setVelocityX(0);
-
+            this.player.setVelocityY(0);
             this.player.anims.play("turn");
         }
 

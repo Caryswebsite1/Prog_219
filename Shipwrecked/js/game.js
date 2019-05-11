@@ -8,12 +8,16 @@ let config = {
   physics: {
     default: 'arcade',
     arcade: {
+      gravity: { y: 0 },
       debug: false
     }
-    },
-  myItem: "this is my item",
+  },
+ 
   scene: [Shipwrecked]
 };
+
+console.log("in game.js");
+let myItem = "this is my item";
 
 // create the game, and pass it the configuration
 let game = new Phaser.Game(config);
