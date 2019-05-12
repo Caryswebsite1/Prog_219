@@ -48,10 +48,12 @@ scoreText = "";
 
     preload() {
         
-        this.load.image("sand", "assets/island_sand_d64.jpg");
-        this.load.image("ocean", "assets/ocean64.jpg");
-        this.load.image("boar", "assets/lava_s64.jpg");
+        this.load.image("sand", "assets/island_sand_d16.jpg");
+        this.load.image("ocean", "assets/ocean16.jpg");
+        this.load.image("boar", "assets/lava_s16.jpg");
         this.load.spritesheet("dude", "assets/universal-lpc-sprite_male_01_full.png", { frameWidth: 64, frameHeight: 64 });
+
+        //game.kineticScrolling = game.plugins.add(Phaser.Plugin.KineticScrolling);
     }
 
 // NOTE:  Our dude sprite sheet is 0 - 12 sprites wide over all. so
@@ -62,6 +64,24 @@ scoreText = "";
     create() {
         //this.score = 0;
         //this.gameOver = false;
+        /*
+        game.kineticScrolling.configure({
+            kineticMovement: true,
+            timeConstantScroll: 325, //really mimic iOS
+            horizontalScroll: true,
+            verticalScroll: true,
+            horizontalWheel: false,
+            verticalWheel: true,
+            deltaWheel: 40
+        });
+        game.kineticScrolling.start(); */
+
+        // Camera: set bounds to whole world size.
+        this.cameras.main.setBounds(0, 0, 1600, 1600);
+
+        // set actual camera width and height for what we see.
+        this.cameras.main.setSize(800, 600);
+
 
         // only for test..
         this.gold = 1;
@@ -77,9 +97,9 @@ scoreText = "";
         //  A sand everywhere.
         let i = 0;
         let j = 0;
-        for (i = 0; i < 640; i += 64) {
+        for (i = 0; i < 1600; i += 16) {
             console.log("in first i loop for sand");
-            for (j = 0; j < 640; j += 64) {
+            for (j = 0; j < 1600; j += 16) {
                 this.ground.create(i, j, "sand");
             }// end for j
         }// end for i
@@ -92,9 +112,9 @@ scoreText = "";
         //  add ocean as a static but we will set it up as a collider later.
         this.BigOcean = this.physics.add.staticGroup();
         // just a couple tiles wide down the left for now.
-        for (i = 0; i < 65; i += 64) {
+        for (i = 0; i < 65; i += 16) {
             console.log("in first i loop for ocean");
-            for (j = 0; j < 640; j += 64) {
+            for (j = 0; j < 1600; j += 16) {
                 this.BigOcean.create(i, j, "ocean");
             }// end for j
         }// end for i
@@ -110,7 +130,7 @@ scoreText = "";
         //this.platforms.create(600, 110, "ground");
 
         // The player and its settings
-        this.player = this.physics.add.sprite(320, 320, "dude");
+        this.player = this.physics.add.sprite(400, 300, "dude");
 
         //  Player physics properties. Give the little guy a slight bounce.
         //this.player.setBounce(0.15);
@@ -213,6 +233,13 @@ scoreText = "";
             this.player.setVelocityY(0);
             this.player.anims.play("turn");
         }
+
+
+        //  Position the center of the camera on the player
+        //  We -400 because the camera width is 800px and
+        //  we want the center of the camera on the player, not the left-hand side of it
+        this.cameras.main.scrollX = this.player.x - 400;
+        this.cameras.main.scrollY = this.player.y - 300;
 
      }// end update
 
